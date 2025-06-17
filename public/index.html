@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Minha Agenda</title>
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <button id="open-create-modal-btn" class="create-button">
+      <img src="https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png" alt="Criar">
+      <span>Criar</span>
+    </button>
+    <div id="main-calendar"></div>
+  </div>
+
+  <div id="form-modal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <h2 id="form-title">Criar Evento</h2>
+      <form id="event-form">
+        <input type="hidden" id="event-id">
+        <input type="text" id="summary" placeholder="Adicionar título" required>
+        <textarea id="description" placeholder="Adicionar descrição"></textarea>
+        <label for="start-time">Início:</label>
+        <input type="datetime-local" id="start-time" required>
+        <label for="end-time">Fim:</label>
+        <input type="datetime-local" id="end-time" required>
+        <input type="text" id="attendees" placeholder="Convidados (e-mails separados por vírgula)">
+        <button type="submit" id="save-button">Salvar</button>
+      </form>
+      <div id="form-message"></div>
+    </div>
+  </div>
+
+  <div id="details-modal" class="modal-overlay">
+    <div class="modal-content event-details-card">
+      <div class="event-header">
+        <div class="event-color-indicator"></div>
+        <div class="event-actions">
+          <button class="action-btn edit-btn" id="edit-event-btn" title="Editar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+          <button class="action-btn delete-btn" id="delete-event-btn" title="Excluir">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3,6 5,6 21,6"/>
+              <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/>
+            </svg>
+          </button>
+          <button class="action-btn close-btn" id="close-btn" title="Fechar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="event-content">
+        <h1 class="event-title" id="details-title">Evento</h1>
+        
+        <div class="event-info-section">
+          <div class="info-row">
+            <div class="info-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <span class="event-datetime" id="details-time">Data e hora</span>
+            </div>
+          </div>
+
+          <div class="info-row" id="location-row" style="display: none;">
+            <div class="info-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <span class="event-location" id="details-location">Local</span>
+            </div>
+          </div>
+
+          <div class="info-row" id="attendees-row">
+            <div class="info-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <div class="attendees-header">
+                <span class="attendees-count" id="attendees-count">0 convidados</span>
+              </div>
+              <div class="attendees-list" id="attendees-list">
+                <!-- Attendees will be populated here -->
+              </div>
+            </div>
+          </div>
+
+          <div class="info-row" id="meet-row" style="display: none;">
+            <div class="info-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <a href="#" id="meet-link" class="meet-link">Participar da reunião</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
