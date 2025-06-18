@@ -69,6 +69,12 @@ app.get('/list-events', async (req, res) => {
       start: event.start.dateTime || event.start.date,
       end: event.end.dateTime || event.end.date,
       url: event.htmlLink,
+      description: event.description,
+      location: event.location,
+      attendees: event.attendees || [],
+      meetLink: event.hangoutLink || (event.conferenceData?.entryPoints?.find(ep => ep.entryPointType === 'video')?.uri),
+      hangoutLink: event.hangoutLink,
+      conferenceData: event.conferenceData
     }));
     res.status(200).json(formattedEvents);
   } catch (error) {
